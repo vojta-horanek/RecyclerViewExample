@@ -5,18 +5,24 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import eu.vojtechh.recyclerviewexample.databinding.NoteModelItemLayoutBinding
 
-class NoteAdapter(
-    private val listener: NoteItemListener
-) : ListAdapter<NoteModel, NoteAdapter.ViewHolder>(NoteModel.DiffCallback) {
+class NoteAdapter : ListAdapter<NoteModel, NoteAdapter.ViewHolder>(NoteModel.DiffCallback) {
 
-    interface NoteItemListener {
-        fun onNoteClick(view: View, note: NoteModel)
+    private var clickListener: (view: View, note: NoteModel) -> Unit = {_, _ -> }
+    private var longClickListener: (view: View, note: NoteModel) -> Unit = {_, _ -> }
+
+    fun setClickListener(listener: (view: View, note: NoteModel) -> Unit) {
+        clickListener = listener
+    }
+
+    fun setLongClickListener(listener: (view: View, note: NoteModel) -> Unit) {
+        longClickListener = listener
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -29,24 +35,28 @@ class NoteAdapter(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
-            ), listener
+            ), clickListener, longClickListener
         )
     }
 
     class ViewHolder(
         private val binding: NoteModelItemLayoutBinding,
-        private val listener: NoteItemListener
+        private val onClick: (view: View, note: NoteModel) -> Unit,
+        private val onLongClick: (view: View, note: NoteModel) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(note: NoteModel) {
             binding.note = note
             with(binding.noteCard) {
                 setCardSelected(note.isSelected)
-                setOnClickListener() {
-                    note.isSelected = !note.isSelected
-                    setCardSelected(note.isSelected)
-                    listener.onNoteClick(this, note)
+                setOnLongClickListener {
+                    onLongClick(this, note)
+                    true
                 }
+                setOnClickListener {
+                    onClick(this, note)
+                }
+
             }
             binding.executePendingBindings()
         }

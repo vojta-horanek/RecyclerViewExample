@@ -1,19 +1,21 @@
 package eu.vojtechh.recyclerviewexample
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
-class MainActivity : AppCompatActivity(), NoteAdapter.NoteItemListener {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,8 +34,13 @@ class MainActivity : AppCompatActivity(), NoteAdapter.NoteItemListener {
         val buttonAddNote = findViewById<MaterialButton>(R.id.button_add)
 
         // Set up recycler view
-        val noteAdapter = NoteAdapter(this)
+        val noteAdapter = NoteAdapter()
         recyclerView.adapter = noteAdapter
+        (recyclerView.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+
+        // Set click listeners for note items
+        noteAdapter.setClickListener { _, note -> viewModel.onNoteClick(note) }
+        noteAdapter.setLongClickListener { _, note -> viewModel.onNoteLongClick(note) }
 
         // Observe on notes list
         viewModel.notes.observe(this, { notes ->
@@ -73,8 +80,6 @@ class MainActivity : AppCompatActivity(), NoteAdapter.NoteItemListener {
             editLayoutText.isErrorEnabled = false
         }
     }
-
-    override fun onNoteClick(view: View, note: NoteModel) = viewModel.onNoteClick()
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         viewModel.isDeleteVisible.value?.let {

@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
 
-    private val _isDeleteVisible = MutableLiveData<Boolean>(false)
+    private val _isDeleteVisible = MutableLiveData(false)
     val isDeleteVisible: LiveData<Boolean> = _isDeleteVisible
 
     private val _notes = MutableLiveData<List<NoteModel>>(listOf())
@@ -41,8 +41,25 @@ class MainViewModel : ViewModel() {
         _isDeleteVisible.value = false
     }
 
-    fun onNoteClick() {
-        _isDeleteVisible.value = _notes.value!!.any { note -> note.isSelected }
+    fun onNoteClick(note: NoteModel) {
+        if (_isDeleteVisible.value!!) {
+            onSelectChange(note)
+        }
     }
 
+    fun onNoteLongClick(note: NoteModel) {
+        onSelectChange(note)
+    }
+
+    private fun onSelectChange(_note: NoteModel) {
+        // Update the list with this note selected state changed
+        val note = _note.copy()
+        note.isSelected = !note.isSelected
+        _notes.value = _notes.value!!.toList().map {
+            if (it.id == note.id) note else it
+        }
+
+        // Show the delete icon accordingly
+        _isDeleteVisible.value = _notes.value!!.any { item -> item.isSelected }
+    }
 }
