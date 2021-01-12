@@ -4,14 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="note"
             type="eu.vojtechh.recyclerviewexample.NoteModel" />
-
-        <import type="android.content.Context" />
-
-        <import type="androidx.core.content.res.ResourcesCompat" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
